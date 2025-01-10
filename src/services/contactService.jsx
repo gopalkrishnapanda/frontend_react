@@ -1,15 +1,26 @@
 // src/services/contactService.js
 const API_URL = 'http://localhost:3001/contacts';
-const AUTHORIZATION_KEY = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2M2IzYmEwZi02MmJjLTRhMmQtYWVmZC0zYzE0MTAzYTFhMmYiLCJzdWIiOiI5Iiwic2NwIjoidXNlciIsImF1ZCI6bnVsbCwiaWF0IjoxNzM2MzY3NzAyLCJleHAiOjE3MzYzNzQ5MDJ9.-dZ5s2oH3JkTvDKkXr7BL8MpkMgdpYPJkemFakyvtBc'
+
 const fetchContacts = async () => {
   try {
+    // Retrieve the token from localStorage
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No token found');
+    }
+
     const response = await fetch(API_URL, {
-       headers: { 'Authorization': `${AUTHORIZATION_KEY}`,},
+      headers: { 'Authorization': `Bearer ${token}` },
     });
+
     if (!response.ok) {
-      console.log(response.json())
+      if (response.status === 401) {
+        // Handle unauthorized access, maybe redirect to login or show an error
+        throw new Error('Unauthorized access, please log in again.');
+      }
       throw new Error('Network response was not ok');
     }
+
     const data = await response.json();
     return data;
   } catch (error) {

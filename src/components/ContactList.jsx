@@ -8,7 +8,6 @@ const ContactList = () => {
   useEffect(() => {
     fetchContacts()
       .then(data => {
-        console.log('Fetched contacts:', data);
         setContacts(data);
       })
       .catch(error => {
