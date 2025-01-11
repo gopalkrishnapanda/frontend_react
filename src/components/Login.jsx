@@ -22,7 +22,7 @@ const Login = ({ onLogin }) => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Login successful:', typeof(data));
+        console.log('Login successful:', data);
         // Store the token
         localStorage.setItem('authToken', data.status.token);
 
