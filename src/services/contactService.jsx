@@ -1,7 +1,7 @@
 // src/services/contactService.js
-const API_URL = 'http://localhost:3001/contacts';
+const fetchContacts = async (userId) => { // Accept userId as a parameter
+  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts`; // Use userId in the URL
 
-const fetchContacts = async () => {
   try {
     // Retrieve the token from localStorage
     const token = localStorage.getItem('authToken');

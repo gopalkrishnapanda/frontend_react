@@ -1,28 +1,39 @@
-// src/components/ContactList.js
 import React, { useEffect, useState } from 'react';
 import fetchContacts from '../services/contactService';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ContactList = () => {
   const [contacts, setContacts] = useState([]);
 
   useEffect(() => {
-    fetchContacts()
-      .then(data => {
-        setContacts(data);
-      })
-      .catch(error => {
-        console.error('Error fetching contacts:', error);
-      });
+    const userId = localStorage.getItem('userId'); // Retrieve user ID from localStorage
+
+    if (userId) {
+      fetchContacts(userId)
+        .then(data => {
+          setContacts(data);
+        })
+        .catch(error => {
+          console.error('Error fetching contacts:', error);
+        });
+    }
   }, []);
 
   return (
-    <div>
-      <h1>Contacts</h1>
-      <ul>
+    <div className="container mt-5">
+      <h1 className="text-center mb-4">Contacts</h1>
+      <div className="row">
         {contacts.map(contact => (
-          <li key={contact.id}>{contact.name}: {contact.phno}</li>
+          <div key={contact.id} className="col-md-4 mb-3">
+            <div className="card bg-light">
+              <div className="card-body">
+                <h5 className="card-title">{contact.name}</h5>
+                <p className="card-text">{contact.phno}</p> {/* Reverted to contact.phno as per your code */}
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
