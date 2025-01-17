@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'r
 import { jwtDecode } from 'jwt-decode';
 import Login from './components/Login';
 import ContactList from './components/ContactList';
+import ContactShow from './components/ContactShow';
 import Navbar from './components/Navbar'; // Import Navbar
 
 const App = () => {
@@ -51,6 +52,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login onLogin={handleLogin} />} />
         <Route path="/contacts" element={isLoggedIn ? <ContactList /> : <Navigate to="/" />} />
+        <Route path="/contact/:id" element={isLoggedIn ? <ContactShow /> : <Navigate to="/" />} />
         {/* Add an About page route if needed */}
         <Route path="/about" element={<About />} />
       </Routes>
