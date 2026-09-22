@@ -1,13 +1,75 @@
 import React, { useEffect, useState } from 'react';
-import fetchContacts, { createContact, deleteContact, updateContact } from '../services/contactService';
+import fetchContacts, { createContact, deleteContact, getCachedContacts, updateContact } from '../services/contactService';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from 'react-router-dom';
 
+const getPhotoUrl = (contact) => {
+  const photo = contact.photo;
+  const attachment = contact.photo_attachment || contact.photoAttachment;
+  const blob = photo?.blob || attachment?.blob;
+  const directUrl = contact.photo_url || contact.photoUrl || contact.image_url || contact.imageUrl ||
+    (typeof photo === 'string' ? photo : photo?.url || photo?.href) ||
+    attachment?.url || attachment?.href || blob?.url;
+
+  if (directUrl) {
+    return directUrl;
+  }
+
+  const signedId = photo?.signed_id || photo?.signedId || attachment?.signed_id ||
+    attachment?.signedId || blob?.signed_id || blob?.signedId;
+  const filename = photo?.filename || attachment?.filename || blob?.filename || 'contact-photo';
+
+  if (signedId) {
+    return `http://127.0.0.1:3001/rails/active_storage/blobs/redirect/${signedId}/${encodeURIComponent(filename)}`;
+  }
+
+  return null;
+};
+
+const getDisplayPhotoUrl = (contact) => {
+  const photoUrl = getPhotoUrl(contact);
+
+  if (!photoUrl || typeof photoUrl !== 'string' || photoUrl.startsWith('http')) {
+    return photoUrl;
+  }
+
+  return `http://127.0.0.1:3001${photoUrl.startsWith('/') ? '' : '/'}${photoUrl}`;
+};
+
+const getInitials = (name) => name
+  .split(' ')
+  .map(part => part[0])
+  .join('')
+  .slice(0, 2)
+  .toUpperCase();
+
+const ContactAvatar = ({ contact }) => {
+  const [imageFailed, setImageFailed] = useState(false);
+  const photoUrl = getDisplayPhotoUrl(contact);
+
+  return (
+    <div className="contact-avatar" aria-label={`${contact.name} photo`}>
+      {photoUrl && !imageFailed ? (
+        <img
+          src={photoUrl}
+          alt={`${contact.name}`}
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        getInitials(contact.name)
+      )}
+    </div>
+  );
+};
+
 const ContactList = () => {
-  const [contacts, setContacts] = useState([]);
+  const userId = localStorage.getItem('userId');
+  const [contacts, setContacts] = useState(() => getCachedContacts(userId));
   const [showAddForm, setShowAddForm] = useState(false);
   const [name, setName] = useState('');
   const [phno, setPhno] = useState('');
+  const [photo, setPhoto] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [addError, setAddError] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -15,13 +77,12 @@ const ContactList = () => {
   const [editingContactId, setEditingContactId] = useState(null);
   const [editingName, setEditingName] = useState('');
   const [editingPhno, setEditingPhno] = useState('');
+  const [editingPhoto, setEditingPhoto] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [editError, setEditError] = useState('');
   const navigate = useNavigate();
   
   useEffect(() => {
-    const userId = localStorage.getItem('userId'); // Retrieve user ID from localStorage
-
     if (userId) {
       fetchContacts(userId)
         .then(data => {
@@ -31,10 +92,11 @@ const ContactList = () => {
           console.error('Error fetching contacts:', error);
         });
     }
-  }, []);
+  }, [userId]);
 
   const handleCardClick = (contactId) =>{
-    navigate(`/contact/${contactId}`);
+    const selectedContact = contacts.find(contact => contact.id === contactId);
+    navigate(`/contact/${contactId}`, { state: { contact: selectedContact } });
   };
 
   const handleDeleteContact = async (event, contactId) => {
@@ -64,6 +126,7 @@ const ContactList = () => {
     setEditingContactId(contact.id);
     setEditingName(contact.name);
     setEditingPhno(contact.phno);
+    setEditingPhoto(null);
     setEditError('');
     setOpenMenuId(null);
   };
@@ -76,7 +139,11 @@ const ContactList = () => {
     setEditError('');
 
     try {
-      await updateContact(userId, contactId, { name: editingName, phno: editingPhno });
+      await updateContact(userId, contactId, {
+        name: editingName,
+        phno: editingPhno,
+        photo: editingPhoto
+      });
       const updatedContacts = await fetchContacts(userId);
       setContacts(updatedContacts);
       setEditingContactId(null);
@@ -100,7 +167,7 @@ const ContactList = () => {
     setIsAdding(true);
 
     try {
-      await createContact(userId, { name, phno });
+      await createContact(userId, { name, phno, photo });
     } catch (error) {
       console.error('Error adding contact:', error);
     } finally {
@@ -114,9 +181,16 @@ const ContactList = () => {
       setShowAddForm(false);
       setName('');
       setPhno('');
+      setPhoto(null);
       setAddError('');
     }
   };
+
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const filteredContacts = contacts.filter(contact => (
+    contact.name?.toLowerCase().includes(normalizedSearchTerm) ||
+    String(contact.phno || '').toLowerCase().includes(normalizedSearchTerm)
+  ));
 
   return (
     <div className="container mt-5">
@@ -124,20 +198,22 @@ const ContactList = () => {
         <h1 className="mb-0">Contacts</h1>
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary contact-add-button"
+          aria-label={showAddForm ? 'Close add contact form' : 'Add contact'}
           onClick={() => {
             setShowAddForm(currentValue => !currentValue);
             setAddError('');
           }}
         >
-          {showAddForm ? 'Cancel' : 'Add Contact'}
+          <span className="contact-add-button-label">{showAddForm ? 'Cancel' : 'Add Contact'}</span>
+          <span className="contact-add-button-icon" aria-hidden="true">{showAddForm ? '×' : '+'}</span>
         </button>
       </div>
 
       {showAddForm && (
         <form className="card card-body mb-4" onSubmit={handleAddContact}>
           <div className="row g-3 align-items-end">
-            <div className="col-md-5">
+            <div className="col-md-4">
               <label htmlFor="contact-name" className="form-label">Name</label>
               <input
                 id="contact-name"
@@ -148,7 +224,7 @@ const ContactList = () => {
                 required
               />
             </div>
-            <div className="col-md-5">
+            <div className="col-md-4">
               <label htmlFor="contact-phone" className="form-label">Phone number</label>
               <input
                 id="contact-phone"
@@ -159,7 +235,17 @@ const ContactList = () => {
                 required
               />
             </div>
-            <div className="col-md-2">
+            <div className="col-md-3">
+              <label htmlFor="contact-photo" className="form-label">Photo</label>
+              <input
+                id="contact-photo"
+                type="file"
+                accept="image/*"
+                className="form-control"
+                onChange={event => setPhoto(event.target.files[0] || null)}
+              />
+            </div>
+            <div className="col-md-1">
               <button type="submit" className="btn btn-success w-100" disabled={isAdding}>
                 {isAdding ? 'Adding...' : 'Add'}
               </button>
@@ -169,11 +255,23 @@ const ContactList = () => {
         </form>
       )}
 
+      <div className="mb-4">
+        <label htmlFor="contact-search" className="form-label">Search contacts</label>
+        <input
+          id="contact-search"
+          type="search"
+          className="form-control"
+          placeholder="Search by name or phone number"
+          value={searchTerm}
+          onChange={event => setSearchTerm(event.target.value)}
+        />
+      </div>
+
       <div className="row">
-        {contacts.map(contact => (
+        {filteredContacts.map(contact => (
           <div key={contact.id} className="col-md-4 mb-3">
-            <div className="card bg-light" onClick={() => handleCardClick(contact.id)}>
-              <div className="card-body position-relative">
+            <div className="card contact-card" onClick={() => handleCardClick(contact.id)}>
+              <div className="card-body contact-card-body position-relative">
                 <button
                   type="button"
                   className="btn btn-light position-absolute top-0 end-0 mt-2 me-2"
@@ -222,6 +320,17 @@ const ContactList = () => {
                       />
                     </div>
                     <div className="mb-2">
+                      <label htmlFor={`edit-photo-${contact.id}`} className="form-label">Photo</label>
+                      <input
+                        id={`edit-photo-${contact.id}`}
+                        type="file"
+                        accept="image/*"
+                        className="form-control"
+                        onChange={event => setEditingPhoto(event.target.files[0] || null)}
+                        onClick={event => event.stopPropagation()}
+                      />
+                    </div>
+                    <div className="mb-2">
                       <label htmlFor={`edit-phone-${contact.id}`} className="form-label">Phone number</label>
                       <input
                         id={`edit-phone-${contact.id}`}
@@ -251,8 +360,11 @@ const ContactList = () => {
                   </form>
                 ) : (
                   <>
-                    <h5 className="card-title">{contact.name}</h5>
-                    <p className="card-text">{contact.phno}</p>
+                    <ContactAvatar contact={contact} />
+                    <div className="contact-details">
+                      <h5 className="card-title mb-1">{contact.name}</h5>
+                      <p className="card-text contact-phone mb-0">{contact.phno}</p>
+                    </div>
                   </>
                 )}
               </div>
@@ -260,6 +372,11 @@ const ContactList = () => {
           </div>
         ))}
       </div>
+      {filteredContacts.length === 0 && (
+        <p className="text-center text-muted">
+          {normalizedSearchTerm ? 'No matching contacts found.' : 'No contacts yet.'}
+        </p>
+      )}
     </div>
   );
 };

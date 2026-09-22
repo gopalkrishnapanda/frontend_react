@@ -1,4 +1,8 @@
 // src/services/contactService.js
+const contactsCache = {};
+
+export const getCachedContacts = (userId) => contactsCache[userId] || [];
+
 const fetchContacts = async (userId) => { // Accept userId as a parameter
   const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts`; // Use userId in the URL
 
@@ -28,6 +32,7 @@ const fetchContacts = async (userId) => { // Accept userId as a parameter
     }
 
     const data = await response.json();
+  contactsCache[userId] = data;
     return data;
   } catch (error) {
     // console.error('Error fetching contacts:', error);
@@ -43,14 +48,20 @@ export const createContact = async (userId, contact) => {
     throw new Error('No token found');
   }
 
+  const formData = new FormData();
+  formData.append('contact[name]', contact.name);
+  formData.append('contact[phno]', contact.phno);
+  if (contact.photo) {
+    formData.append('contact[photo]', contact.photo);
+  }
+
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
       'Accept': 'application/json'
     },
-    body: JSON.stringify({ contact })
+    body: formData
   });
 
   if (!response.ok) {
@@ -89,14 +100,20 @@ export const updateContact = async (userId, contactId, contact) => {
     throw new Error('No token found');
   }
 
+  const formData = new FormData();
+  formData.append('contact[name]', contact.name);
+  formData.append('contact[phno]', contact.phno);
+  if (contact.photo) {
+    formData.append('contact[photo]', contact.photo);
+  }
+
   const response = await fetch(API_URL, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
       'Accept': 'application/json'
     },
-    body: JSON.stringify({ contact })
+    body: formData
   });
 
   if (!response.ok) {
