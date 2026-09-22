@@ -10,7 +10,13 @@ const fetchContacts = async (userId) => { // Accept userId as a parameter
     }
 
     const response = await fetch(API_URL, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache' // forces fresh response
+      }
     });
 
     if (!response.ok) {
@@ -24,8 +30,78 @@ const fetchContacts = async (userId) => { // Accept userId as a parameter
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching contacts:', error);
+    // console.error('Error fetching contacts:', error);
     throw error;
+  }
+};
+
+export const createContact = async (userId, contact) => {
+  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts`;
+  const token = localStorage.getItem('authToken');
+
+  if (!token) {
+    throw new Error('No token found');
+  }
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ contact })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.message || 'Unable to add contact');
+  }
+};
+
+export const deleteContact = async (userId, contactId) => {
+  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts/${contactId}`;
+  const token = localStorage.getItem('authToken');
+
+  if (!token) {
+    throw new Error('No token found');
+  }
+
+  const response = await fetch(API_URL, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error('Unable to delete contact');
+  }
+};
+
+export const updateContact = async (userId, contactId, contact) => {
+  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts/${contactId}`;
+  const token = localStorage.getItem('authToken');
+
+  if (!token) {
+    throw new Error('No token found');
+  }
+
+  const response = await fetch(API_URL, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({ contact })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.message || 'Unable to update contact');
   }
 };
 
