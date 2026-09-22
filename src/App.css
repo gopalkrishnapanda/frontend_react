@@ -2,6 +2,169 @@
   box-shadow: 0 4px 2px -2px gray;
 }
 
+.contact-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  min-height: 138px;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.contact-card:hover {
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+  transform: translateY(-2px);
+}
+
+.contact-card-body {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.contact-avatar {
+  align-items: center;
+  background: #dbeafe;
+  border-radius: 50%;
+  color: #1d4ed8;
+  display: flex;
+  flex: 0 0 72px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  height: 72px;
+  justify-content: center;
+  overflow: hidden;
+  width: 72px;
+}
+
+.contact-avatar img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.contact-details {
+  min-width: 0;
+  padding-right: 2rem;
+}
+
+.contact-phone {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.contact-detail-card {
+  max-width: 36rem;
+}
+
+.contact-detail-photo {
+  border-radius: 16px;
+  display: block;
+  height: 180px;
+  object-fit: cover;
+  width: 180px;
+}
+
+.contact-detail-photo-wrap {
+  position: relative;
+  width: 180px;
+}
+
+.contact-photo-edit-button {
+  align-items: center;
+  background: #2563eb;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font-size: 1.15rem;
+  height: 38px;
+  justify-content: center;
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  width: 38px;
+}
+
+.contact-photo-edit-button:hover {
+  background: #1d4ed8;
+}
+
+.contact-show-photo-section {
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1rem;
+}
+
+.contact-photo-placeholder {
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px dashed #94a3b8;
+  border-radius: 16px;
+  color: #64748b;
+  display: flex;
+  height: 180px;
+  justify-content: center;
+  width: 180px;
+}
+
+.contact-photo-preview {
+  border-radius: 12px;
+  display: block;
+  height: 120px;
+  object-fit: cover;
+  width: 120px;
+}
+
+.contact-detail-name {
+  font-size: 1.5rem;
+}
+
+.contact-add-button-icon {
+  display: none;
+}
+
+@media (max-width: 576px) {
+  .contact-add-button {
+    align-items: center;
+    border-radius: 50%;
+    bottom: 1.25rem;
+    display: flex;
+    font-size: 2rem;
+    height: 58px;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    position: fixed;
+    right: 1.25rem;
+    width: 58px;
+    z-index: 1030;
+  }
+
+  .contact-add-button-label {
+    display: none;
+  }
+
+  .contact-add-button-icon {
+    display: block;
+    font-weight: 300;
+    margin-top: -3px;
+  }
+
+  .contact-card-body {
+    padding: 1rem;
+  }
+
+  .contact-avatar {
+    flex-basis: 58px;
+    height: 58px;
+    width: 58px;
+  }
+}
+
 
 
 
