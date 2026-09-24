@@ -4,6 +4,8 @@ import { jwtDecode } from 'jwt-decode';
 import Login from './components/Login';
 import ContactList from './components/ContactList';
 import ContactShow from './components/ContactShow';
+import GroupList from './components/GroupList';
+import GroupShow from './components/GroupShow';
 import Navbar from './components/Navbar'; // Import Navbar
 
 const App = () => {
@@ -53,6 +55,8 @@ const App = () => {
         <Route path="/" element={<Login onLogin={handleLogin} />} />
         <Route path="/contacts" element={isLoggedIn ? <ContactList /> : <Navigate to="/" />} />
         <Route path="/favorites" element={isLoggedIn ? <ContactList favoritesOnly /> : <Navigate to="/" />} />
+        <Route path="/groups" element={isLoggedIn ? <GroupList /> : <Navigate to="/" />} />
+        <Route path="/group/:id" element={isLoggedIn ? <GroupShow /> : <Navigate to="/" />} />
         <Route path="/contact/:id" element={isLoggedIn ? <ContactShow /> : <Navigate to="/" />} />
       </Routes>
     </Router>
