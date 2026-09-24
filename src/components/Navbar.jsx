@@ -43,6 +43,9 @@ const Navbar = () => {
               <Link className="nav-link" to="/favorites">Favourites</Link>
             </li>
             <li className="nav-item">
+              <Link className="nav-link" to="/groups">Groups</Link>
+            </li>
+            <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={handleSignOut}>Sign Out</button>
             </li>
           </ul>
