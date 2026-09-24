@@ -48,6 +48,30 @@
   padding-right: 2rem;
 }
 
+.contact-favourite-button {
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1.6rem;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  right: 3.25rem;
+  top: 1rem;
+  z-index: 1;
+}
+
+.contact-favourite-button:hover,
+.contact-favourite-button.is-favourite {
+  color: #f59e0b;
+}
+
+.contact-favourite-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .contact-phone {
   color: #64748b;
   font-size: 0.95rem;

@@ -52,9 +52,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login onLogin={handleLogin} />} />
         <Route path="/contacts" element={isLoggedIn ? <ContactList /> : <Navigate to="/" />} />
+        <Route path="/favorites" element={isLoggedIn ? <ContactList favoritesOnly /> : <Navigate to="/" />} />
         <Route path="/contact/:id" element={isLoggedIn ? <ContactShow /> : <Navigate to="/" />} />
-        {/* Add an About page route if needed */}
-        <Route path="/about" element={<About />} />
       </Routes>
     </Router>
   );
@@ -67,13 +66,5 @@ const NavbarWithConditionalRendering = () => {
 
   return showNavbar ? <Navbar /> : null;
 };
-
-// About Component (Add a simple About component for demonstration)
-const About = () => (
-  <div className="container mt-5">
-    <h1>About</h1>
-    <p>This is the About page for MyApp.</p>
-  </div>
-);
 
 export default App;

@@ -3,6 +3,16 @@ const contactsCache = {};
 
 export const getCachedContacts = (userId) => contactsCache[userId] || [];
 
+export const setCachedContacts = (userId, contacts) => {
+  contactsCache[userId] = contacts;
+};
+
+export const clearContactsCache = (userId) => {
+  if (userId) {
+    delete contactsCache[userId];
+  }
+};
+
 const fetchContacts = async (userId) => { // Accept userId as a parameter
   const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts`; // Use userId in the URL
 
@@ -32,7 +42,7 @@ const fetchContacts = async (userId) => { // Accept userId as a parameter
     }
 
     const data = await response.json();
-  contactsCache[userId] = data;
+    setCachedContacts(userId, data);
     return data;
   } catch (error) {
     // console.error('Error fetching contacts:', error);
@@ -103,6 +113,9 @@ export const updateContact = async (userId, contactId, contact) => {
   const formData = new FormData();
   formData.append('contact[name]', contact.name);
   formData.append('contact[phno]', contact.phno);
+  if (typeof contact.is_favourite === 'boolean') {
+    formData.append('contact[is_favourite]', contact.is_favourite);
+  }
   if (contact.photo) {
     formData.append('contact[photo]', contact.photo);
   }
@@ -121,5 +134,38 @@ export const updateContact = async (userId, contactId, contact) => {
     throw new Error(errorData?.message || 'Unable to update contact');
   }
 };
+
+const setFavourite = async (userId, contactId, isFavourite) => {
+  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts/${contactId}`;
+  const token = localStorage.getItem('authToken');
+
+  if (!token) {
+    throw new Error('No token found');
+  }
+
+  const response = await fetch(API_URL, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      contact: {
+        is_favourite: isFavourite
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.message || 'Unable to update favourite');
+  }
+
+};
+
+export const addFavourite = (userId, contactId) => setFavourite(userId, contactId, true);
+
+export const removeFavourite = (userId, contactId) => setFavourite(userId, contactId, false);
 
 export default fetchContacts;

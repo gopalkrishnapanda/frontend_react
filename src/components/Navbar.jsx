@@ -2,11 +2,13 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../App.css';
+import { clearContactsCache } from '../services/contactService';
 
 const Navbar = () => {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
+    const userId = localStorage.getItem('userId');
     fetch('http://127.0.0.1:3001/users/sign_out', {
       method: 'DELETE',
       headers: {
@@ -15,6 +17,7 @@ const Navbar = () => {
       },
     }).then((response) => {
       if (response.ok) {
+        clearContactsCache(userId);
         localStorage.removeItem('authToken');
         localStorage.removeItem('userId');
         navigate('/');
@@ -37,7 +40,7 @@ const Navbar = () => {
               <Link className="nav-link" to="/contacts">Contacts</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/about">About</Link>
+              <Link className="nav-link" to="/favorites">Favourites</Link>
             </li>
             <li className="nav-item">
               <button className="nav-link btn btn-link" onClick={handleSignOut}>Sign Out</button>

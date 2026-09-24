@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import fetchContacts, { createContact, deleteContact, getCachedContacts, updateContact } from '../services/contactService';
+import fetchContacts, { addFavourite, createContact, deleteContact, getCachedContacts, removeFavourite, setCachedContacts, updateContact } from '../services/contactService';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -43,6 +43,8 @@ const getInitials = (name) => name
   .slice(0, 2)
   .toUpperCase();
 
+const isFavourite = contact => Boolean(contact.is_favourite);
+
 const ContactAvatar = ({ contact }) => {
   const [imageFailed, setImageFailed] = useState(false);
   const photoUrl = getDisplayPhotoUrl(contact);
@@ -62,7 +64,7 @@ const ContactAvatar = ({ contact }) => {
   );
 };
 
-const ContactList = () => {
+const ContactList = ({ favoritesOnly = false }) => {
   const userId = localStorage.getItem('userId');
   const [contacts, setContacts] = useState(() => getCachedContacts(userId));
   const [showAddForm, setShowAddForm] = useState(false);
@@ -80,6 +82,7 @@ const ContactList = () => {
   const [editingPhoto, setEditingPhoto] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [editError, setEditError] = useState('');
+  const [favouriteContactId, setFavouriteContactId] = useState(null);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -129,6 +132,44 @@ const ContactList = () => {
     setEditingPhoto(null);
     setEditError('');
     setOpenMenuId(null);
+  };
+
+  const handleFavouriteToggle = async (event, contact) => {
+    event.stopPropagation();
+    const nextFavourite = !isFavourite(contact);
+    setFavouriteContactId(contact.id);
+    setContacts(currentContacts => {
+      const updatedContacts = currentContacts.map(currentContact => (
+      currentContact.id === contact.id
+        ? { ...currentContact, is_favourite: nextFavourite }
+        : currentContact
+      ));
+      setCachedContacts(userId, updatedContacts);
+      return updatedContacts;
+    });
+
+    try {
+      if (nextFavourite) {
+        await addFavourite(userId, contact.id);
+      } else {
+        await removeFavourite(userId, contact.id);
+      }
+      const updatedContacts = await fetchContacts(userId);
+      setContacts(updatedContacts);
+    } catch (error) {
+      console.error('Error updating favourite contact:', error);
+      setContacts(currentContacts => {
+        const revertedContacts = currentContacts.map(currentContact => (
+        currentContact.id === contact.id
+          ? { ...currentContact, is_favourite: contact.is_favourite }
+          : currentContact
+        ));
+        setCachedContacts(userId, revertedContacts);
+        return revertedContacts;
+      });
+    } finally {
+      setFavouriteContactId(null);
+    }
   };
 
   const handleUpdateContact = async (event, contactId) => {
@@ -187,7 +228,17 @@ const ContactList = () => {
   };
 
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const filteredContacts = contacts.filter(contact => (
+  const visibleContacts = favoritesOnly
+    ? contacts.filter(isFavourite)
+    : contacts;
+  const sortedContacts = [...visibleContacts].sort((firstContact, secondContact) => (
+    String(firstContact.name || '').localeCompare(
+      String(secondContact.name || ''),
+      'en',
+      { sensitivity: 'base' }
+    )
+  ));
+  const filteredContacts = sortedContacts.filter(contact => (
     contact.name?.toLowerCase().includes(normalizedSearchTerm) ||
     String(contact.phno || '').toLowerCase().includes(normalizedSearchTerm)
   ));
@@ -195,8 +246,8 @@ const ContactList = () => {
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-center align-items-center gap-3 mb-4">
-        <h1 className="mb-0">Contacts</h1>
-        <button
+        <h1 className="mb-0">{favoritesOnly ? 'Favourites' : 'Contacts'}</h1>
+        {!favoritesOnly && <button
           type="button"
           className="btn btn-primary contact-add-button"
           aria-label={showAddForm ? 'Close add contact form' : 'Add contact'}
@@ -207,7 +258,7 @@ const ContactList = () => {
         >
           <span className="contact-add-button-label">{showAddForm ? 'Cancel' : 'Add Contact'}</span>
           <span className="contact-add-button-icon" aria-hidden="true">{showAddForm ? '×' : '+'}</span>
-        </button>
+        </button>}
       </div>
 
       {showAddForm && (
@@ -272,6 +323,16 @@ const ContactList = () => {
           <div key={contact.id} className="col-md-4 mb-3">
             <div className="card contact-card" onClick={() => handleCardClick(contact.id)}>
               <div className="card-body contact-card-body position-relative">
+                <button
+                  type="button"
+                  className={`contact-favourite-button ${isFavourite(contact) ? 'is-favourite' : ''}`}
+                  aria-label={isFavourite(contact) ? `Remove ${contact.name} from favourites` : `Add ${contact.name} to favourites`}
+                  aria-pressed={isFavourite(contact)}
+                  disabled={favouriteContactId === contact.id}
+                  onClick={event => handleFavouriteToggle(event, contact)}
+                >
+                  {isFavourite(contact) ? '★' : '☆'}
+                </button>
                 <button
                   type="button"
                   className="btn btn-light position-absolute top-0 end-0 mt-2 me-2"
@@ -374,7 +435,11 @@ const ContactList = () => {
       </div>
       {filteredContacts.length === 0 && (
         <p className="text-center text-muted">
-          {normalizedSearchTerm ? 'No matching contacts found.' : 'No contacts yet.'}
+          {normalizedSearchTerm
+            ? 'No matching contacts found.'
+            : favoritesOnly
+              ? 'No favourite contacts yet.'
+              : 'No contacts yet.'}
         </p>
       )}
     </div>
