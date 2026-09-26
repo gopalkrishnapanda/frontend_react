@@ -3,13 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../App.css';
 import { clearContactsCache } from '../services/contactService';
+import { API_BASE_URL } from '../config';
 
 const Navbar = () => {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
     const userId = localStorage.getItem('userId');
-    fetch('http://127.0.0.1:3001/users/sign_out', {
+    fetch(`${API_BASE_URL}/users/sign_out`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
