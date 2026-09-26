@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { API_BASE_URL } from '../config';
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('user10@user.com');
   const [password, setPassword] = useState('password123');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://127.0.0.1:3001/users/sign_in', {
+      const response = await fetch(`${API_BASE_URL}/users/sign_in`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,8 +72,14 @@ const Login = ({ onLogin }) => {
                 />
               </div>
               {error && <p className="text-danger">{error}</p>}
+              {location.state?.signupSuccess && (
+                <p className="text-success">{location.state.signupSuccess}</p>
+              )}
               <button type="submit" className="btn btn-primary w-100">Login</button>
             </form>
+            <p className="text-center mt-3 mb-0">
+              Don&apos;t have an account? <Link to="/signup">Sign up</Link>
+            </p>
           </div>
         </div>
       </div>

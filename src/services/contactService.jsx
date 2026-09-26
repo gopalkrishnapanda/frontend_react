@@ -1,4 +1,6 @@
 // src/services/contactService.js
+import { API_BASE_URL } from '../config';
+
 const contactsCache = {};
 
 export const getCachedContacts = (userId) => contactsCache[userId] || [];
@@ -14,7 +16,7 @@ export const clearContactsCache = (userId) => {
 };
 
 const fetchContacts = async (userId) => { // Accept userId as a parameter
-  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts`; // Use userId in the URL
+  const API_URL = `${API_BASE_URL}/users/${userId}/contacts`;
 
   try {
     // Retrieve the token from localStorage
@@ -51,7 +53,7 @@ const fetchContacts = async (userId) => { // Accept userId as a parameter
 };
 
 export const createContact = async (userId, contact) => {
-  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts`;
+  const API_URL = `${API_BASE_URL}/users/${userId}/contacts`;
   const token = localStorage.getItem('authToken');
 
   if (!token) {
@@ -81,7 +83,7 @@ export const createContact = async (userId, contact) => {
 };
 
 export const deleteContact = async (userId, contactId) => {
-  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts/${contactId}`;
+  const API_URL = `${API_BASE_URL}/users/${userId}/contacts/${contactId}`;
   const token = localStorage.getItem('authToken');
 
   if (!token) {
@@ -103,7 +105,7 @@ export const deleteContact = async (userId, contactId) => {
 };
 
 export const updateContact = async (userId, contactId, contact) => {
-  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts/${contactId}`;
+  const API_URL = `${API_BASE_URL}/users/${userId}/contacts/${contactId}`;
   const token = localStorage.getItem('authToken');
 
   if (!token) {
@@ -136,7 +138,7 @@ export const updateContact = async (userId, contactId, contact) => {
 };
 
 const setFavourite = async (userId, contactId, isFavourite) => {
-  const API_URL = `http://127.0.0.1:3001/users/${userId}/contacts/${contactId}`;
+  const API_URL = `${API_BASE_URL}/users/${userId}/contacts/${contactId}`;
   const token = localStorage.getItem('authToken');
 
   if (!token) {

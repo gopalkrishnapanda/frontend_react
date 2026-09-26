@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import Login from './components/Login';
+import Signup from './components/Signup';
 import ContactList from './components/ContactList';
 import ContactShow from './components/ContactShow';
 import GroupList from './components/GroupList';
@@ -53,6 +54,7 @@ const App = () => {
       <NavbarWithConditionalRendering /> {/* Conditionally render Navbar */}
       <Routes>
         <Route path="/" element={<Login onLogin={handleLogin} />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/contacts" element={isLoggedIn ? <ContactList /> : <Navigate to="/" />} />
         <Route path="/favorites" element={isLoggedIn ? <ContactList favoritesOnly /> : <Navigate to="/" />} />
         <Route path="/groups" element={isLoggedIn ? <GroupList /> : <Navigate to="/" />} />

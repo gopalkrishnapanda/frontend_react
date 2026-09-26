@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { deleteContact, updateContact } from '../services/contactService';
+import { API_BASE_URL } from '../config';
 
 const getPhotoUrl = (contact) => {
   const photo = contact.photo;
@@ -20,7 +21,7 @@ const getPhotoUrl = (contact) => {
   const filename = photo?.filename || attachment?.filename || blob?.filename || 'contact-photo';
 
   if (signedId) {
-    return `http://127.0.0.1:3001/rails/active_storage/blobs/redirect/${signedId}/${encodeURIComponent(filename)}`;
+    return `${API_BASE_URL}/rails/active_storage/blobs/redirect/${signedId}/${encodeURIComponent(filename)}`;
   }
 
   return null;
@@ -33,7 +34,7 @@ const getDisplayPhotoUrl = (contact) => {
     return photoUrl;
   }
 
-  return `http://127.0.0.1:3001${photoUrl.startsWith('/') ? '' : '/'}${photoUrl}`;
+  return `${API_BASE_URL}${photoUrl.startsWith('/') ? '' : '/'}${photoUrl}`;
 };
 
 const Contact = () => {
@@ -69,7 +70,7 @@ const Contact = () => {
     const authToken = localStorage.getItem('authToken');
     const fetchContact = async() =>{
         try{
-          const response = await fetch(`http://127.0.0.1:3001/users/${userId}/contacts/${id}`, {
+          const response = await fetch(`${API_BASE_URL}/users/${userId}/contacts/${id}`, {
            headers: { 'Authorization': `Bearer ${authToken}`, // Add auth token to request headers
             'Content-Type': 'application/json' } });
             if (!response.ok){

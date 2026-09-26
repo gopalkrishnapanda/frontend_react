@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import fetchContacts, { addFavourite, createContact, deleteContact, getCachedContacts, removeFavourite, setCachedContacts, updateContact } from '../services/contactService';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const getPhotoUrl = (contact) => {
   const photo = contact.photo;
@@ -20,7 +21,7 @@ const getPhotoUrl = (contact) => {
   const filename = photo?.filename || attachment?.filename || blob?.filename || 'contact-photo';
 
   if (signedId) {
-    return `http://127.0.0.1:3001/rails/active_storage/blobs/redirect/${signedId}/${encodeURIComponent(filename)}`;
+    return `${API_BASE_URL}/rails/active_storage/blobs/redirect/${signedId}/${encodeURIComponent(filename)}`;
   }
 
   return null;
@@ -33,7 +34,7 @@ const getDisplayPhotoUrl = (contact) => {
     return photoUrl;
   }
 
-  return `http://127.0.0.1:3001${photoUrl.startsWith('/') ? '' : '/'}${photoUrl}`;
+  return `${API_BASE_URL}${photoUrl.startsWith('/') ? '' : '/'}${photoUrl}`;
 };
 
 const getInitials = (name) => name
